@@ -10,6 +10,7 @@ import (
 
 const (
 	prefixName       = "Package: "
+	prefixDesc       = "Description: "
 	prefixVersion    = "Version: "
 	prefixMaintainer = "Maintainer: "
 	prefixArch       = "Architecture: "
@@ -17,6 +18,7 @@ const (
 
 type Package struct {
 	Name         string `json:"Name"`
+	Description  string `json:"Description"`
 	Version      string `json:"Version"`
 	Maintainer   string `json:"Maintainer"`
 	Architecture string `json:"Architecture"`
@@ -48,6 +50,9 @@ func (p *Package) Parser() {
 		if strings.HasPrefix(line, prefixName) {
 			name := strings.TrimPrefix(line, prefixName)
 			p.Name = name
+		} else if strings.HasPrefix(line, prefixDesc) {
+			desc := strings.TrimPrefix(line, prefixDesc)
+			p.Description = desc
 		} else if strings.HasPrefix(line, prefixVersion) {
 			version := strings.TrimPrefix(line, prefixVersion)
 			p.Version = version
@@ -61,6 +66,7 @@ func (p *Package) Parser() {
 
 		P.Packages[p.Name] = Package{
 			Name:         p.Name,
+			Description:  p.Description,
 			Version:      p.Version,
 			Maintainer:   p.Maintainer,
 			Architecture: p.Architecture,

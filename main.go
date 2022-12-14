@@ -7,14 +7,15 @@ import (
 )
 
 func main() {
+	p := new(filter.Package)
+
 	if _, err := os.Stat("./packages"); err == nil {
 		fmt.Println("Parsing packages...")
-		p := new(filter.Package)
 		p.Parser()
 	} else {
 		fmt.Println("Downloading packages...")
 		filter.GetPackages("./packages", "https://download.parrot.sh/parrot/dists/parrot/main/binary-amd64/Packages")
-		fmt.Println("Done! Parsing...")
-		//defer f.Parser()
+		fmt.Println("Done! Filtering...")
+		defer p.Parser()
 	}
 }
