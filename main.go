@@ -51,8 +51,14 @@ func main() {
 		log.Fatal(errMkdir)
 	}
 
-	// Start downloading packages for all architectures available
-	log.Println("Downloading packages...")
+	// Start downloading packages for all branches and architectures available
+	log.Println("[info] Downloading packages...")
+	branch := []string{
+		"contrib",
+		"main",
+		"non-free",
+	}
+
 	arch := []string{
 		"amd64",
 		"arm64",
@@ -61,18 +67,21 @@ func main() {
 	}
 
 	// Use the DownloadPackages function to download Packages for each architecture
-	for i := range arch {
-		errDownload := filter.DownloadPackages(
-			"packages/"+arch[i]+"-packages",
-			url+"/main/binary-"+arch[i]+"/Packages")
+	for b := range branch {
+		// TODO: download packages for all branches
+		for a := range arch {
+			errDownload := filter.DownloadPackages(
+				"packages/"+arch[a]+"-packages",
+				url+"/"+branch[b]+"/binary-"+arch[a]+"/Packages")
 
-		if errDownload != nil {
-			log.Fatal(errDownload)
+			if errDownload != nil {
+				log.Fatal(errDownload)
+			}
 		}
 	}
 
 	// The filter phase begins.
-	log.Println("[!] Filtering...")
+	log.Println("[info] Filtering...")
 	f.Parser()
 
 	// The packages folder which contains Packages for each architecture
@@ -81,11 +90,12 @@ func main() {
 	if errRmdir != nil {
 		log.Fatal(errRmdir)
 	}
-	log.Println("Deleted all Packages files.")
+	log.Println("[info] Deleted all Packages files.")
 
 	// The HTTP server to show the JSON files is started.
 	handleFunctions()
 	log.Printf("[!] Starting HTTP server to serve json files at port: %s\n", port)
+	log.Println("[info] Check http://localhost:8080/packages/main/")
 	errHttp := http.ListenAndServe(":"+port, nil)
 	if errHttp != nil {
 		log.Fatal(errHttp)
