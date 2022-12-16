@@ -1,3 +1,6 @@
+// filter.go takes care of filtering the desired informations
+// from Packages for each architecture.
+
 package src
 
 import (
@@ -8,6 +11,7 @@ import (
 	"strings"
 )
 
+// Prefixes and structs to manage the components of each single Package.
 const (
 	prefixName       = "Package: "
 	prefixDesc       = "Description: "
@@ -30,6 +34,7 @@ type PackageSet struct {
 
 func (p *Package) Parser() {
 
+	// Each Packages is contained within a temporary directory called packages.
 	architecture := map[string]string{
 		"amd64": "packages/amd64-packages",
 		"arm64": "packages/arm64-packages",
@@ -37,22 +42,11 @@ func (p *Package) Parser() {
 		"i386":  "packages/i386-packages",
 	}
 
-	/*
-		errJsonDir := os.Chdir("../json")
-		if errJsonDir != nil {
-			log.Fatal(errJsonDir)
-		}
-		log.Println("Dir changed successfully")
-		newDir, err := os.Getwd()
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("Current Working Direcotry: %s\n", newDir)
-	*/
-
+	// For each architecture the filter phase takes place here.
 	for i := range architecture {
 		file, _ := os.Open(architecture[i])
 
+		// Increase of the buffer because the size of each single Packages file is large.
 		scanner := bufio.NewScanner(file)
 		buf := make([]byte, 0, 64*1024)
 		scanner.Buffer(buf, 1024*1024)
@@ -62,9 +56,11 @@ func (p *Package) Parser() {
 
 		lineNumber := 0
 
+		// Scan every line within every Packages for every architecture.
 		for scanner.Scan() {
 			line := scanner.Text()
 
+			// Each line is scanned and filtered according to prefixes.
 			if strings.HasPrefix(line, prefixName) {
 				name := strings.TrimPrefix(line, prefixName)
 				p.Name = name
@@ -82,6 +78,7 @@ func (p *Package) Parser() {
 				p.Architecture = arch
 			}
 
+			// Each filtered line is stored in the Package struct above.
 			P.Packages[p.Name] = Package{
 				Name:         p.Name,
 				Description:  p.Description,
@@ -97,16 +94,22 @@ func (p *Package) Parser() {
 			log.Fatalf("Error on line %v: %v", lineNumber, errScanner)
 		}
 
+		// Once the filtering stage is complete, the data is indented in a JSON file.
 		data, _ := json.MarshalIndent(P, "", "\t")
 
+		// For simplicity, the word "packages" has been removed from the architecture map
+		// in order to better manage the movement of new JSON files within the program.
+		// Check architecture variable.
 		s := strings.TrimPrefix(architecture[i], "packages/")
-		jsonData := s + ".json"
 
+		// The filtered and indented JSON file is correctly written in its format.
+		jsonData := s + ".json"
 		errWriteFile := os.WriteFile(jsonData, data, 0644)
 		if errWriteFile != nil {
 			log.Fatalf("Can't write and %s", errWriteFile)
 		}
 
+		// Each JSON file is now placed in a specific directory, "json".
 		errJsonData := os.Rename(jsonData, "./json/"+jsonData)
 		if errJsonData != nil {
 			log.Fatal(errJsonData)

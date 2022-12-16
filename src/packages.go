@@ -7,6 +7,7 @@ import (
 	"os"
 )
 
+// DownloadPackages This function just manages the download of each Packages file.
 func DownloadPackages(filepath string, url string) (err error) {
 	out, err := os.Create(filepath)
 	if err != nil {
