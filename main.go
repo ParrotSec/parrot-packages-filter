@@ -20,21 +20,29 @@ func handleFunctions() {
 }
 
 func main() {
-	const port = 8080
+	const port = "8080"
+	const url = "https://download.parrot.sh/parrot/dists/parrot"
 
 	f := new(filter.Package)
 
 	log.Println("Downloading packages...")
-	amd64, arm64 := "amd64", "arm64"
-	filter.DownloadPackages("./"+amd64+"-packages", "https://download.parrot.sh/parrot/dists/parrot/main/binary-"+amd64+"/Packages")
-	filter.DownloadPackages("./"+arm64+"-packages", "https://download.parrot.sh/parrot/dists/parrot/main/binary-"+arm64+"/Packages")
+	arch := []string{"amd64"} // for more architectures, add "arm64", "armhf", "i386"
+	for i := range arch {
+		errDownload := filter.DownloadPackages(
+			"./"+arch[i]+"-packages",
+			url+"/main/binary-"+arch[i]+"/Packages")
+
+		if errDownload != nil {
+			log.Fatal(errDownload)
+		}
+	}
 
 	log.Println("Filtering...")
 	f.Parser()
 	log.Printf("[!] Starting HTTP server at port: %d\n", port)
 
 	handleFunctions()
-	errHttp := http.ListenAndServe(":8080", nil)
+	errHttp := http.ListenAndServe(":"+port, nil)
 	if errHttp != nil {
 		log.Fatal(errHttp)
 	}
