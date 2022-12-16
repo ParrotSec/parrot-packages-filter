@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func GetPackages(filepath string, url string) (err error) {
+func DownloadPackages(filepath string, url string) (err error) {
 	out, err := os.Create(filepath)
 	if err != nil {
 		return err

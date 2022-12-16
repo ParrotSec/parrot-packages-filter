@@ -29,11 +29,7 @@ type PackageSet struct {
 }
 
 func (p *Package) Parser() {
-	file, err := os.Open("./packages")
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
+	file, _ := os.Open("./amd64-packages")
 
 	scanner := bufio.NewScanner(file)
 	buf := make([]byte, 0, 64*1024)
@@ -79,5 +75,5 @@ func (p *Package) Parser() {
 		log.Fatalf("Error on line %v: %v", lineNumber, err)
 	}
 	data, _ := json.MarshalIndent(P, "", "\t")
-	os.WriteFile("packages.json", data, 0644)
+	os.WriteFile("amd64-packages.json", data, 0644)
 }

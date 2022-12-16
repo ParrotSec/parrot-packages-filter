@@ -1,38 +1,41 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 	filter "package-filter/src"
 )
 
-func getPackages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "packages.json")
+func getAMD64Packages(w http.ResponseWriter, req *http.Request) {
+	http.ServeFile(w, req, "amd64-packages.json")
+}
+
+func getARM64Packages(w http.ResponseWriter, req *http.Request) {
+	http.ServeFile(w, req, "arm64-packages.json")
+}
+
+func handleFunctions() {
+	http.HandleFunc("/packages/main/amd64/", getAMD64Packages)
+	http.HandleFunc("/packages/main/arm64/", getARM64Packages)
 }
 
 func main() {
-	p := new(filter.Package)
+	const port = 8080
 
-	if _, err := os.Stat("./packages"); err == nil {
-		fmt.Println("Parsing packages...")
-		p.Parser()
-		fmt.Println("Done. Check packages.json")
-	} else {
-		fmt.Println("Downloading packages...")
-		err := filter.GetPackages("./packages", "https://download.parrot.sh/parrot/dists/parrot/main/binary-amd64/Packages")
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println("Done! Filtering...")
-		defer p.Parser()
+	f := new(filter.Package)
+
+	log.Println("Downloading packages...")
+	amd64, arm64 := "amd64", "arm64"
+	filter.DownloadPackages("./"+amd64+"-packages", "https://download.parrot.sh/parrot/dists/parrot/main/binary-"+amd64+"/Packages")
+	filter.DownloadPackages("./"+arm64+"-packages", "https://download.parrot.sh/parrot/dists/parrot/main/binary-"+arm64+"/Packages")
+
+	log.Println("Filtering...")
+	f.Parser()
+	log.Printf("[!] Starting HTTP server at port: %d\n", port)
+
+	handleFunctions()
+	errHttp := http.ListenAndServe(":8080", nil)
+	if errHttp != nil {
+		log.Fatal(errHttp)
 	}
-
-	http.HandleFunc("/packages/", getPackages)
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 }
