@@ -3,23 +3,24 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	filter "package-filter/src"
 )
 
 func getAMD64Packages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "amd64-packages.json")
+	http.ServeFile(w, req, "json/amd64-packages.json")
 }
 
 func getARM64Packages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "arm64-packages.json")
+	http.ServeFile(w, req, "json/arm64-packages.json")
 }
 
 func getARMHFPackages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "armhf-packages.json")
+	http.ServeFile(w, req, "json/armhf-packages.json")
 }
 
 func geti386Packages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "i386-packages.json")
+	http.ServeFile(w, req, "json/i386-packages.json")
 }
 
 func handleFunctions() {
@@ -35,6 +36,13 @@ func main() {
 
 	f := new(filter.Package)
 
+	// Create temporary dir called "packages"
+	errMkdir := os.Mkdir("packages", os.ModePerm)
+	if errMkdir != nil {
+		log.Fatal(errMkdir)
+	}
+
+	// Start downloading packages for all architectures available
 	log.Println("Downloading packages...")
 	arch := []string{
 		"amd64",
@@ -45,7 +53,7 @@ func main() {
 
 	for i := range arch {
 		errDownload := filter.DownloadPackages(
-			"./"+arch[i]+"-packages",
+			"packages/"+arch[i]+"-packages",
 			url+"/main/binary-"+arch[i]+"/Packages")
 
 		if errDownload != nil {
@@ -53,10 +61,16 @@ func main() {
 		}
 	}
 
-	log.Println("Filtering...")
+	log.Println("[!] Filtering...")
 	f.Parser()
-	log.Printf("[!] Starting HTTP server at port: %s\n", port)
 
+	errRmdir := os.RemoveAll("packages")
+	if errRmdir != nil {
+		log.Fatal(errRmdir)
+	}
+	log.Println("Deleted all Packages files.")
+
+	log.Printf("[!] Starting HTTP server to serve json files at port: %s\n", port)
 	handleFunctions()
 	errHttp := http.ListenAndServe(":"+port, nil)
 	if errHttp != nil {

@@ -29,24 +29,38 @@ type PackageSet struct {
 }
 
 func (p *Package) Parser() {
-	version := map[string]string{
-		"amd64": "./amd64-packages",
-		"arm64": "./arm64-packages",
-		"armhf": "./armhf-packages",
-		"i386":  "./i386-packages",
+
+	architecture := map[string]string{
+		"amd64": "packages/amd64-packages",
+		"arm64": "packages/arm64-packages",
+		"armhf": "packages/armhf-packages",
+		"i386":  "packages/i386-packages",
 	}
 
-	for i := range version {
-		file, _ := os.Open(version[i])
+	/*
+		errJsonDir := os.Chdir("../json")
+		if errJsonDir != nil {
+			log.Fatal(errJsonDir)
+		}
+		log.Println("Dir changed successfully")
+		newDir, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Current Working Direcotry: %s\n", newDir)
+	*/
+
+	for i := range architecture {
+		file, _ := os.Open(architecture[i])
 
 		scanner := bufio.NewScanner(file)
 		buf := make([]byte, 0, 64*1024)
 		scanner.Buffer(buf, 1024*1024)
 
-		lineNumber := 0
-
 		var P PackageSet
 		P.Packages = make(map[string]Package)
+
+		lineNumber := 0
 
 		for scanner.Scan() {
 			line := scanner.Text()
@@ -75,17 +89,27 @@ func (p *Package) Parser() {
 				Maintainer:   p.Maintainer,
 				Architecture: p.Architecture,
 			}
-
 			lineNumber++
 		}
 
-		if err := scanner.Err(); err != nil {
-			log.Fatalf("Error on line %v: %v", lineNumber, err)
+		errScanner := scanner.Err()
+		if errScanner != nil {
+			log.Fatalf("Error on line %v: %v", lineNumber, errScanner)
 		}
+
 		data, _ := json.MarshalIndent(P, "", "\t")
-		errWriteFile := os.WriteFile(version[i]+".json", data, 0644)
+
+		s := strings.TrimPrefix(architecture[i], "packages/")
+		jsonData := s + ".json"
+
+		errWriteFile := os.WriteFile(jsonData, data, 0644)
 		if errWriteFile != nil {
-			log.Fatalf("Can't create and write to %s", errWriteFile)
+			log.Fatalf("Can't write and %s", errWriteFile)
+		}
+
+		errJsonData := os.Rename(jsonData, "./json/"+jsonData)
+		if errJsonData != nil {
+			log.Fatal(errJsonData)
 		}
 	}
 }
