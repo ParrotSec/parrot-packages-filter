@@ -14,19 +14,19 @@ import (
 
 // These functions take care of showing the respective .json files contained in the json folder on the browser
 func getAMD64Packages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "json/amd64-packages.json")
+	http.ServeFile(w, req, "json/amd64.json")
 }
 
 func getARM64Packages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "json/arm64-packages.json")
+	http.ServeFile(w, req, "json/arm64.json")
 }
 
 func getARMHFPackages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "json/armhf-packages.json")
+	http.ServeFile(w, req, "json/armhf.json")
 }
 
 func geti386Packages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "json/i386-packages.json")
+	http.ServeFile(w, req, "json/i386.json")
 }
 
 func handleFunctions() {
@@ -79,12 +79,15 @@ func main() {
 
 		for a := range arch {
 			// Check and if not exists create a new JSON folder where to store each new JSON file for each branch and architecture
-			if _, errStatJson := os.Stat("./json/packages/" + branch[b] + "/" + arch[a] + "/"); errors.Is(errStatJson, os.ErrNotExist) {
-				// Don't use sudo go run main.go
-				errJsonFolder := os.MkdirAll("./json/packages/"+branch[b]+"/"+arch[a]+"/", 0777)
+			jsonPath := "json/packages/" + branch[b] + "/" + arch[a] + "/"
+
+			if _, errStatJson := os.Stat(jsonPath); errors.Is(errStatJson, os.ErrNotExist) {
+
+				errJsonFolder := os.MkdirAll(jsonPath, os.ModePerm)
 				if errJsonFolder != nil {
 					log.Fatal(errJsonFolder)
 				}
+
 			}
 
 			// Start downloading packages for all branches and architectures available

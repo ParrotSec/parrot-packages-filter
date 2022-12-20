@@ -18,6 +18,7 @@ const (
 	prefixVersion    = "Version: "
 	prefixMaintainer = "Maintainer: "
 	prefixArch       = "Architecture: "
+	prefixSection    = "Section: "
 )
 
 type Package struct {
@@ -26,6 +27,7 @@ type Package struct {
 	Version      string `json:"Version"`
 	Maintainer   string `json:"Maintainer"`
 	Architecture string `json:"Architecture"`
+	Section      string `json:"Section"`
 }
 
 type PackageSet struct {
@@ -84,6 +86,9 @@ func (p *Package) Parser() {
 				} else if strings.HasPrefix(line, prefixArch) {
 					arch := strings.TrimPrefix(line, prefixArch)
 					p.Architecture = arch
+				} else if strings.HasPrefix(line, prefixSection) {
+					section := strings.TrimPrefix(line, prefixSection)
+					p.Section = section
 				}
 
 				// Each filtered line is stored in the Package struct above.
@@ -93,6 +98,7 @@ func (p *Package) Parser() {
 					Version:      p.Version,
 					Maintainer:   p.Maintainer,
 					Architecture: p.Architecture,
+					Section:      p.Section,
 				}
 				lineNumber++
 			}
@@ -112,7 +118,7 @@ func (p *Package) Parser() {
 
 			// The filtered and indented JSON file is correctly written in its format.
 			jsonData := s + ".json"
-			errWriteFile := os.WriteFile(jsonData, data, 0644)
+			errWriteFile := os.WriteFile(jsonData, data, os.ModePerm)
 			if errWriteFile != nil {
 				log.Fatalf("Can't %s", errWriteFile)
 			}
@@ -122,6 +128,7 @@ func (p *Package) Parser() {
 			if errJsonData != nil {
 				log.Fatal(errJsonData)
 			}
+			defer file.Close()
 		}
 	}
 }
