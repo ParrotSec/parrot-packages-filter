@@ -54,6 +54,7 @@ func (p *Package) Parser() {
 
 		// For each architecture the filter phase takes place here.
 		for a := range architecture {
+
 			file, _ := os.Open(architecture[a])
 
 			// Increase of the buffer because the size of each single Packages file is large.
@@ -71,24 +72,32 @@ func (p *Package) Parser() {
 				line := scanner.Text()
 
 				// Each line is scanned and filtered according to prefixes.
-				if strings.HasPrefix(line, prefixName) {
+				switch {
+
+				case strings.HasPrefix(line, prefixName):
 					name := strings.TrimPrefix(line, prefixName)
 					p.Name = name
-				} else if strings.HasPrefix(line, prefixDesc) {
+
+				case strings.HasPrefix(line, prefixDesc):
 					desc := strings.TrimPrefix(line, prefixDesc)
 					p.Description = desc
-				} else if strings.HasPrefix(line, prefixVersion) {
+
+				case strings.HasPrefix(line, prefixVersion):
 					version := strings.TrimPrefix(line, prefixVersion)
 					p.Version = version
-				} else if strings.HasPrefix(line, prefixMaintainer) {
+
+				case strings.HasPrefix(line, prefixMaintainer):
 					maintainer := strings.TrimPrefix(line, prefixMaintainer)
 					p.Maintainer = maintainer
-				} else if strings.HasPrefix(line, prefixArch) {
+
+				case strings.HasPrefix(line, prefixArch):
 					arch := strings.TrimPrefix(line, prefixArch)
 					p.Architecture = arch
-				} else if strings.HasPrefix(line, prefixSection) {
+
+				case strings.HasPrefix(line, prefixSection):
 					section := strings.TrimPrefix(line, prefixSection)
 					p.Section = section
+
 				}
 
 				// Each filtered line is stored in the Package struct above.
@@ -128,7 +137,7 @@ func (p *Package) Parser() {
 			if errJsonData != nil {
 				log.Fatal(errJsonData)
 			}
-			defer file.Close()
+
 		}
 	}
 }

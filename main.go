@@ -12,6 +12,7 @@ import (
 	filter "package-filter/src"
 )
 
+// TODO: redo all ServeFile calls
 // These functions take care of showing the respective .json files contained in the json folder on the browser
 func getAMD64Packages(w http.ResponseWriter, req *http.Request) {
 	http.ServeFile(w, req, "json/amd64.json")
@@ -98,6 +99,7 @@ func main() {
 			if errDownload != nil {
 				log.Fatal(errDownload)
 			}
+
 		}
 	}
 
@@ -107,9 +109,9 @@ func main() {
 
 	// The packages folder which contains Packages for each architecture
 	// is deleted as it is no longer useful.
-	errRmdir := os.RemoveAll("packages")
-	if errRmdir != nil {
-		log.Fatal(errRmdir)
+	errRmdirs := os.RemoveAll("packages")
+	if errRmdirs != nil {
+		log.Fatal(errRmdirs)
 	}
 	log.Println("[info] Deleted all Packages files.")
 
@@ -117,8 +119,9 @@ func main() {
 	handleFunctions()
 	log.Printf("[!] Starting HTTP server to serve JSON files at port: %s\n", port)
 	log.Println("[info] Check http://localhost:8080/packages/main/")
-	errHttp := http.ListenAndServe(":"+port, nil)
-	if errHttp != nil {
-		log.Fatal(errHttp)
+	errHttpServer := http.ListenAndServe(":"+port, nil)
+	if errHttpServer != nil {
+		log.Fatal(errHttpServer)
 	}
+
 }
