@@ -5,6 +5,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -51,8 +52,10 @@ func main() {
 		log.Fatal(errMkdir)
 	}
 
-	// Start downloading packages for all branches and architectures available
+	// Start the downloading phase
 	log.Println("[info] Downloading packages...")
+
+	// TODO: can branch and arch be a single array?
 	branch := []string{
 		"contrib",
 		"main",
@@ -66,12 +69,27 @@ func main() {
 		"i386",
 	}
 
-	// Use the DownloadPackages function to download Packages for each architecture
+	// Use the DownloadPackages function to download Packages for each branch and architecture
 	for b := range branch {
-		// TODO: download packages for all branches
+
+		errBranchDir := os.Mkdir("packages/"+branch[b], os.ModePerm)
+		if errBranchDir != nil {
+			log.Fatal(errBranchDir)
+		}
+
 		for a := range arch {
+			// Check and if not exists create a new JSON folder where to store each new JSON file for each branch and architecture
+			if _, errStatJson := os.Stat("./json/packages/" + branch[b] + "/" + arch[a] + "/"); errors.Is(errStatJson, os.ErrNotExist) {
+				// Don't use sudo go run main.go
+				errJsonFolder := os.MkdirAll("./json/packages/"+branch[b]+"/"+arch[a]+"/", 0777)
+				if errJsonFolder != nil {
+					log.Fatal(errJsonFolder)
+				}
+			}
+
+			// Start downloading packages for all branches and architectures available
 			errDownload := filter.DownloadPackages(
-				"packages/"+arch[a]+"-packages",
+				"packages/"+branch[b]+"/"+arch[a],
 				url+"/"+branch[b]+"/binary-"+arch[a]+"/Packages")
 
 			if errDownload != nil {
@@ -94,7 +112,7 @@ func main() {
 
 	// The HTTP server to show the JSON files is started.
 	handleFunctions()
-	log.Printf("[!] Starting HTTP server to serve json files at port: %s\n", port)
+	log.Printf("[!] Starting HTTP server to serve JSON files at port: %s\n", port)
 	log.Println("[info] Check http://localhost:8080/packages/main/")
 	errHttp := http.ListenAndServe(":"+port, nil)
 	if errHttp != nil {
