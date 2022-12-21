@@ -7,14 +7,14 @@ package main
 import (
 	"errors"
 	"log"
-	"net/http"
 	"os"
+	"package-filter/api"
 	filter "package-filter/src"
 )
 
 // TODO: redo all ServeFile calls
 // These functions take care of showing the respective .json files contained in the json folder on the browser
-func getAMD64Packages(w http.ResponseWriter, req *http.Request) {
+/*func getAMD64Packages(w http.ResponseWriter, req *http.Request) {
 	http.ServeFile(w, req, "json/amd64.json")
 }
 
@@ -35,7 +35,7 @@ func handleFunctions() {
 	http.HandleFunc("/packages/main/arm64/", getARM64Packages)
 	http.HandleFunc("/packages/main/armhf/", getARMHFPackages)
 	http.HandleFunc("/packages/main/i386/", geti386Packages)
-}
+}*/
 
 // Here the three phases of the program are carried out:
 // 1. Download the Packages for all the architectures.
@@ -115,13 +115,16 @@ func main() {
 	}
 	log.Println("[info] Deleted all Packages files.")
 
+	log.Printf("[!] Launching HTTP server to serve JSON files at port: %s\n", port)
+	api.PackagesAPI()
+
 	// The HTTP server to show the JSON files is started.
-	handleFunctions()
-	log.Printf("[!] Starting HTTP server to serve JSON files at port: %s\n", port)
-	log.Println("[info] Check http://localhost:8080/packages/main/")
-	errHttpServer := http.ListenAndServe(":"+port, nil)
-	if errHttpServer != nil {
-		log.Fatal(errHttpServer)
-	}
+	/*	handleFunctions()
+		log.Printf("[!] Starting HTTP server to serve JSON files at port: %s\n", port)
+		log.Println("[info] Check http://localhost:8080/packages/main/")
+		errHttpServer := http.ListenAndServe(":"+port, nil)
+		if errHttpServer != nil {
+			log.Fatal(errHttpServer)
+		}*/
 
 }
