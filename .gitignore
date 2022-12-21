@@ -1,1 +1,4 @@
 .idea
+binary-*.json
+packages
+json

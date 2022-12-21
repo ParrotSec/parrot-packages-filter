@@ -1,32 +1,33 @@
 package src
 
 import (
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 )
 
-func GetPackages(filepath string, url string) (err error) {
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
+// DownloadPackages This function just manages the download of each Packages file.
+func DownloadPackages(filepath string, url string) (err error) {
+	out, errCreate := os.Create(filepath)
+	if errCreate != nil {
+		log.Fatal(errCreate)
 	}
 	defer out.Close()
 
-	res, err := http.Get(url)
-	if err != nil {
-		return err
+	res, errGet := http.Get(url)
+	if errGet != nil {
+		log.Fatal(errGet)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("Bad status: %s", res.Status)
+		log.Fatalf("Bad status: %s", res.Status)
 	}
 
-	_, err = io.Copy(out, res.Body)
-	if err != nil {
-		return err
+	_, errCopy := io.Copy(out, res.Body)
+	if errCopy != nil {
+		log.Fatal(errCopy)
 	}
 
 	return nil
