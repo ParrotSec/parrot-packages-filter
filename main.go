@@ -9,32 +9,37 @@ import (
 	"log"
 	"net/http"
 	"os"
-	filter "package-filter/src"
+	filter "package-filter/internal"
 )
 
-// TODO: redo all ServeFile calls
+var branch = [3]string{
+	"contrib",
+	"main",
+	"non-free",
+}
+
+var arch = [4]string{
+	"amd64",
+	"arm64",
+	"armhf",
+	"i386",
+}
+
 // These functions take care of showing the respective .json files contained in the json folder on the browser
-func getAMD64Packages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "json/amd64.json")
-}
-
-func getARM64Packages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "json/arm64.json")
-}
-
-func getARMHFPackages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "json/armhf.json")
-}
-
-func geti386Packages(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "json/i386.json")
+func showPackages(w http.ResponseWriter, req *http.Request) {
+	for b := range branch {
+		for a := range arch {
+			http.ServeFile(w, req, "json/packages/"+branch[b]+"/"+arch[a]+"/"+arch[a]+".json")
+		}
+	}
 }
 
 func handleFunctions() {
-	http.HandleFunc("/packages/main/amd64/", getAMD64Packages)
-	http.HandleFunc("/packages/main/arm64/", getARM64Packages)
-	http.HandleFunc("/packages/main/armhf/", getARMHFPackages)
-	http.HandleFunc("/packages/main/i386/", geti386Packages)
+	for b := range branch {
+		for a := range arch {
+			http.HandleFunc("/packages/"+branch[b]+"/"+arch[a]+"/", showPackages)
+		}
+	}
 }
 
 // Here the three phases of the program are carried out:
@@ -55,20 +60,6 @@ func main() {
 
 	// Start the downloading phase
 	log.Println("[info] Downloading packages...")
-
-	// TODO: can branch and arch be a single array?
-	branch := []string{
-		"contrib",
-		"main",
-		"non-free",
-	}
-
-	arch := []string{
-		"amd64",
-		"arm64",
-		"armhf",
-		"i386",
-	}
 
 	// Use the DownloadPackages function to download Packages for each branch and architecture
 	for b := range branch {
@@ -113,13 +104,13 @@ func main() {
 	if errRmdirs != nil {
 		log.Fatal(errRmdirs)
 	}
-	log.Println("[info] Deleted all Packages files.")
+	log.Println("[info] All Packages files deleted.")
 
 	// The HTTP server to show the JSON files is started.
+	log.Printf("[!] Starting HTTP server to serve JSON files at http://localhost:%s/packages/", port)
+
 	handleFunctions()
-	log.Printf("[!] Starting HTTP server to serve JSON files at port: %s\n", port)
-	log.Println("[info] Check http://localhost:8080/packages/main/")
-	errHttpServer := http.ListenAndServe(":"+port, nil)
+	errHttpServer := http.ListenAndServe("localhost:"+port, nil)
 	if errHttpServer != nil {
 		log.Fatal(errHttpServer)
 	}
