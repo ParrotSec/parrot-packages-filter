@@ -7,7 +7,6 @@ package main
 import (
 	"errors"
 	"log"
-	"net/http"
 	"os"
 	filter "package-filter/internal"
 )
@@ -25,29 +24,10 @@ var arch = [4]string{
 	"i386",
 }
 
-// These functions take care of showing the respective .json files contained in the json folder on the browser
-func showPackages(w http.ResponseWriter, req *http.Request) {
-	for b := range branch {
-		for a := range arch {
-			http.ServeFile(w, req, "json/packages/"+branch[b]+"/"+arch[a]+"/"+arch[a]+".json")
-		}
-	}
-}
-
-func handleFunctions() {
-	for b := range branch {
-		for a := range arch {
-			http.HandleFunc("/packages/"+branch[b]+"/"+arch[a]+"/", showPackages)
-		}
-	}
-}
-
 // Here the three phases of the program are carried out:
 // 1. Download the Packages for all the architectures.
 // 2. Filter and return them as JSON files.
-// 3. Start the HTTP server to show them in the browser.
 func main() {
-	const port = "8080"
 	const url = "https://download.parrot.sh/parrot/dists/parrot"
 
 	f := new(filter.Package)
@@ -104,15 +84,7 @@ func main() {
 	if errRmdirs != nil {
 		log.Fatal(errRmdirs)
 	}
+
 	log.Println("[info] All Packages files deleted.")
-
-	// The HTTP server to show the JSON files is started.
-	log.Printf("[!] Starting HTTP server to serve JSON files at http://localhost:%s/packages/", port)
-
-	handleFunctions()
-	errHttpServer := http.ListenAndServe("localhost:"+port, nil)
-	if errHttpServer != nil {
-		log.Fatal(errHttpServer)
-	}
-
+	log.Println("[success] Check the json folder.")
 }
