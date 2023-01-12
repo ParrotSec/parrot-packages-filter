@@ -1,4 +1,4 @@
-// filter.go takes care of filtering the desired informations from Packages for each architecture.
+// filter.go takes care of filtering the desired information from Packages for each architecture.
 
 package internal
 
@@ -35,13 +35,7 @@ type PackageSet struct {
 
 func (p *Package) Parser() {
 
-	branch := []string{
-		"contrib",
-		"main",
-		"non-free",
-	}
-
-	// Each Packages is contained within a temporary directory called packages.
+	// Each Packages file is contained within a temporary directory called packages.
 	for b := range branch {
 
 		architecture := map[string]string{
@@ -66,7 +60,7 @@ func (p *Package) Parser() {
 
 			lineNumber := 0
 
-			// Scan every line within every Packages for every architecture.
+			// Scan every line within every Packages file for every architecture.
 			for scanner.Scan() {
 				line := scanner.Text()
 
@@ -136,7 +130,6 @@ func (p *Package) Parser() {
 			if errJsonData != nil {
 				log.Fatal(errJsonData)
 			}
-
 		}
 	}
 }

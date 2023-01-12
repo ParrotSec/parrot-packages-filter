@@ -20,7 +20,7 @@ var arch = [4]string{
 }
 
 func GetJsonPackages() {
-	const url = "https://download.parrot.sh/parrot/dists/parrot"
+	const url = "https://deb.parrot.sh/parrot/dists/parrot"
 
 	for b := range branch {
 
