@@ -26,17 +26,14 @@ var arch = [4]string{
 
 // Here the three phases of the program are carried out:
 // 1. Download the Packages for all the architectures.
-// 2. Filter and return them as JSON files.
+// 2. Filter and return them as JSON files (~70 mb).
 func main() {
 	const url = "https://download.parrot.sh/parrot/dists/parrot"
 
 	f := new(filter.Package)
 
 	// Create temporary dir called "packages"
-	errMkdir := os.Mkdir("packages", os.ModePerm)
-	if errMkdir != nil {
-		log.Fatal(errMkdir)
-	}
+	filter.Mkdir()
 
 	// Start the downloading phase
 	log.Println("[info] Downloading packages...")
@@ -66,7 +63,6 @@ func main() {
 			errDownload := filter.DownloadPackages(
 				"packages/"+branch[b]+"/"+arch[a],
 				url+"/"+branch[b]+"/binary-"+arch[a]+"/Packages")
-
 			if errDownload != nil {
 				log.Fatal(errDownload)
 			}
@@ -80,10 +76,7 @@ func main() {
 
 	// The packages folder which contains Packages for each architecture
 	// is deleted as it is no longer useful.
-	errRmdirs := os.RemoveAll("packages")
-	if errRmdirs != nil {
-		log.Fatal(errRmdirs)
-	}
+	filter.Rmdirs()
 
 	log.Println("[info] All Packages files deleted.")
 	log.Println("[success] Check the json folder.")
