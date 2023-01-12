@@ -9,15 +9,15 @@ import (
 
 // DownloadPackages This function just manages the download of each Packages file.
 func DownloadPackages(filepath string, url string) (err error) {
-	out, err := os.Create(filepath)
-	if err != nil {
-		log.Fatal(err)
+	out, errCreate := os.Create(filepath)
+	if errCreate != nil {
+		log.Fatal(errCreate)
 	}
 	defer out.Close()
 
-	res, err := http.Get(url)
-	if err != nil {
-		log.Fatal(err)
+	res, errGet := http.Get(url)
+	if errGet != nil {
+		log.Fatal(errGet)
 	}
 	defer res.Body.Close()
 
@@ -25,9 +25,9 @@ func DownloadPackages(filepath string, url string) (err error) {
 		log.Fatalf("Bad status: %s", res.Status)
 	}
 
-	_, err = io.Copy(out, res.Body)
-	if err != nil {
-		log.Fatal(err)
+	_, errCopy := io.Copy(out, res.Body)
+	if errCopy != nil {
+		log.Fatal(errCopy)
 	}
 
 	return nil
