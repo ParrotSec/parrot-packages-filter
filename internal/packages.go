@@ -1,34 +1,56 @@
 package internal
 
 import (
-	"io"
+	"errors"
 	"log"
-	"net/http"
 	"os"
 )
 
-// DownloadPackages This function just manages the download of each Packages file.
-func DownloadPackages(filepath string, url string) (err error) {
-	out, errCreate := os.Create(filepath)
-	if errCreate != nil {
-		log.Fatal(errCreate)
-	}
-	defer out.Close()
+var branch = [3]string{
+	"contrib",
+	"main",
+	"non-free",
+}
 
-	res, errGet := http.Get(url)
-	if errGet != nil {
-		log.Fatal(errGet)
-	}
-	defer res.Body.Close()
+var arch = [4]string{
+	"amd64",
+	"arm64",
+	"armhf",
+	"i386",
+}
 
-	if res.StatusCode != http.StatusOK {
-		log.Fatalf("Bad status: %s", res.Status)
-	}
+func GetJsonPackages() {
+	const url = "https://download.parrot.sh/parrot/dists/parrot"
 
-	_, errCopy := io.Copy(out, res.Body)
-	if errCopy != nil {
-		log.Fatal(errCopy)
-	}
+	for b := range branch {
 
-	return nil
+		errBranchDir := os.Mkdir("packages/"+branch[b], os.ModePerm)
+		if errBranchDir != nil {
+			log.Fatal(errBranchDir)
+		}
+
+		for a := range arch {
+			// Check and if not exists create a new JSON folder where to store each new JSON file for each branch and architecture
+			jsonPath := "json/packages/" + branch[b] + "/" + arch[a] + "/"
+
+			if _, errStatJson := os.Stat(jsonPath); errors.Is(errStatJson, os.ErrNotExist) {
+
+				errJsonFolder := os.MkdirAll(jsonPath, os.ModePerm)
+				if errJsonFolder != nil {
+					log.Fatal(errJsonFolder)
+				}
+
+			}
+
+			// Start downloading packages for all branches and architectures available
+			errDownload := DownloadPackages(
+				"packages/"+branch[b]+"/"+arch[a],
+				url+"/"+branch[b]+"/binary-"+arch[a]+"/Packages",
+			)
+			if errDownload != nil {
+				log.Fatal(errDownload)
+			}
+
+		}
+	}
 }
