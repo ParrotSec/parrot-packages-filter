@@ -1,5 +1,4 @@
-// filter.go takes care of filtering the desired informations
-// from Packages for each architecture.
+// filter.go takes care of filtering the desired informations from Packages for each architecture.
 
 package internal
 
