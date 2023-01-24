@@ -1,37 +1,26 @@
-package internal
+package fileops
 
 import (
 	"errors"
 	"log"
 	"os"
+	c "package-filter/internal/constants"
+	"package-filter/internal/network"
 )
 
-var branch = [3]string{
-	"contrib",
-	"main",
-	"non-free",
-}
-
-var arch = [4]string{
-	"amd64",
-	"arm64",
-	"armhf",
-	"i386",
-}
-
-func GetJsonPackages() {
+func GetJSONPackages() {
 	const url = "https://deb.parrot.sh/parrot/dists/parrot"
 
-	for b := range branch {
+	for b := range c.Branch {
 
-		errBranchDir := os.Mkdir("packages/"+branch[b], os.ModePerm)
+		errBranchDir := os.Mkdir("packages/"+c.Branch[b], os.ModePerm)
 		if errBranchDir != nil {
 			log.Fatal(errBranchDir)
 		}
 
-		for a := range arch {
+		for a := range c.Arch {
 			// Check and if not exists create a new JSON folder where to store each new JSON file for each branch and architecture
-			jsonPath := "json/packages/" + branch[b] + "/" + arch[a] + "/"
+			jsonPath := "json/packages/" + c.Branch[b] + "/" + c.Arch[a] + "/"
 
 			if _, errStatJson := os.Stat(jsonPath); errors.Is(errStatJson, os.ErrNotExist) {
 
@@ -43,9 +32,9 @@ func GetJsonPackages() {
 			}
 
 			// Start downloading packages for all branches and architectures available
-			errDownload := DownloadPackages(
-				"packages/"+branch[b]+"/"+arch[a],
-				url+"/"+branch[b]+"/binary-"+arch[a]+"/Packages",
+			errDownload := network.DownloadPackages(
+				"packages/"+c.Branch[b]+"/"+c.Arch[a],
+				url+"/"+c.Branch[b]+"/binary-"+c.Arch[a]+"/Packages",
 			)
 			if errDownload != nil {
 				log.Fatal(errDownload)

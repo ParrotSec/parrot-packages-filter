@@ -6,7 +6,8 @@ package main
 
 import (
 	"log"
-	filter "package-filter/internal"
+	"package-filter/internal/fileops"
+	"package-filter/internal/filter"
 )
 
 // Here the three phases of the program are carried out:
@@ -16,13 +17,13 @@ func main() {
 	f := new(filter.Package)
 
 	// Create temporary dir called "packages"
-	filter.Mkdir()
+	fileops.Mkdir()
 
 	// Start the downloading phase
 	log.Println("[info] Downloading packages...")
 
 	// Use the DownloadPackages function to download Packages for each branch and architecture
-	filter.GetJsonPackages()
+	fileops.GetJSONPackages()
 
 	// The filter phase begins.
 	log.Println("[info] Filtering...")
@@ -30,7 +31,7 @@ func main() {
 
 	// The packages folder which contains Packages for each architecture
 	// is deleted as it is no longer useful.
-	filter.Rmdirs()
+	fileops.Rmdirs()
 
 	log.Println("[info] All Packages files deleted.")
 	log.Println("[success] Check the json folder.")
