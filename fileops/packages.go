@@ -4,8 +4,8 @@ import (
 	"errors"
 	"log"
 	"os"
-	c "package-filter/internal/constants"
-	"package-filter/internal/network"
+	c "package-filter/constants"
+	"package-filter/network"
 )
 
 func GetJSONPackages() {

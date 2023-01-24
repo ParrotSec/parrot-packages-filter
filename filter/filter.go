@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-	c "package-filter/internal/constants"
+	c "package-filter/constants"
 	"strings"
 )
 

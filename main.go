@@ -6,8 +6,8 @@ package main
 
 import (
 	"log"
-	"package-filter/internal/fileops"
-	"package-filter/internal/filter"
+	"package-filter/fileops"
+	"package-filter/filter"
 )
 
 // Here the three phases of the program are carried out:
