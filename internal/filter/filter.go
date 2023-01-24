@@ -1,25 +1,17 @@
 // filter.go takes care of filtering the desired information from Packages for each architecture.
 
-package internal
+package filter
 
 import (
 	"bufio"
 	"encoding/json"
 	"log"
 	"os"
+	c "package-filter/internal/constants"
 	"strings"
 )
 
-// Prefixes and structs to manage the components of each single Package.
-const (
-	prefixName       = "Package: "
-	prefixDesc       = "Description: "
-	prefixVersion    = "Version: "
-	prefixMaintainer = "Maintainer: "
-	prefixArch       = "Architecture: "
-	prefixSection    = "Section: "
-)
-
+// Structs to manage the components of each single Package.
 type Package struct {
 	Name         string `json:"Name"`
 	Description  string `json:"Description"`
@@ -36,13 +28,13 @@ type PackageSet struct {
 func (p *Package) Parser() {
 
 	// Each Packages file is contained within a temporary directory called packages.
-	for b := range branch {
+	for b := range c.Branch {
 
 		architecture := map[string]string{
-			"amd64": "packages/" + branch[b] + "/amd64",
-			"arm64": "packages/" + branch[b] + "/arm64",
-			"armhf": "packages/" + branch[b] + "/armhf",
-			"i386":  "packages/" + branch[b] + "/i386",
+			"amd64": "packages/" + c.Branch[b] + "/amd64",
+			"arm64": "packages/" + c.Branch[b] + "/arm64",
+			"armhf": "packages/" + c.Branch[b] + "/armhf",
+			"i386":  "packages/" + c.Branch[b] + "/i386",
 		}
 
 		// For each architecture the filter phase takes place here.
@@ -67,28 +59,28 @@ func (p *Package) Parser() {
 				// Each line is scanned and filtered according to prefixes.
 				switch {
 
-				case strings.HasPrefix(line, prefixName):
-					name := strings.TrimPrefix(line, prefixName)
+				case strings.HasPrefix(line, c.PrefixName):
+					name := strings.TrimPrefix(line, c.PrefixName)
 					p.Name = name
 
-				case strings.HasPrefix(line, prefixDesc):
-					desc := strings.TrimPrefix(line, prefixDesc)
+				case strings.HasPrefix(line, c.PrefixDesc):
+					desc := strings.TrimPrefix(line, c.PrefixDesc)
 					p.Description = desc
 
-				case strings.HasPrefix(line, prefixVersion):
-					version := strings.TrimPrefix(line, prefixVersion)
+				case strings.HasPrefix(line, c.PrefixVersion):
+					version := strings.TrimPrefix(line, c.PrefixVersion)
 					p.Version = version
 
-				case strings.HasPrefix(line, prefixMaintainer):
-					maintainer := strings.TrimPrefix(line, prefixMaintainer)
+				case strings.HasPrefix(line, c.PrefixMaintainer):
+					maintainer := strings.TrimPrefix(line, c.PrefixMaintainer)
 					p.Maintainer = maintainer
 
-				case strings.HasPrefix(line, prefixArch):
-					arch := strings.TrimPrefix(line, prefixArch)
+				case strings.HasPrefix(line, c.PrefixArch):
+					arch := strings.TrimPrefix(line, c.PrefixArch)
 					p.Architecture = arch
 
-				case strings.HasPrefix(line, prefixSection):
-					section := strings.TrimPrefix(line, prefixSection)
+				case strings.HasPrefix(line, c.PrefixSection):
+					section := strings.TrimPrefix(line, c.PrefixSection)
 					p.Section = section
 
 				}
@@ -115,8 +107,7 @@ func (p *Package) Parser() {
 
 			// For simplicity, the word "packages" has been removed from the architecture map
 			// in order to better manage the movement of new JSON files within the program.
-			// Check architecture variable.
-			s := strings.TrimPrefix(architecture[a], "packages/"+branch[b]+"/")
+			s := strings.TrimPrefix(architecture[a], "packages/"+c.Branch[b]+"/")
 
 			// The filtered and indented JSON file is correctly written in its format.
 			jsonData := s + ".json"
